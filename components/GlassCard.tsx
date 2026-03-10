@@ -10,13 +10,10 @@ const GlassCard: React.FC<GlassCardProps> = ({ children, className = '', hoverEf
   return (
     <div 
       className={`
+        panel-surface
         relative
-        bg-glass-200 
-        backdrop-blur-xl 
-        border border-glass-border 
-        rounded-xl
-        shadow-sm
-        ${hoverEffect ? 'transition-transform duration-300 hover:-translate-y-0.5 hover:bg-glass-300 hover:border-glass-highlight' : ''}
+        rounded-[28px]
+        ${hoverEffect ? 'transition-transform duration-300 hover:-translate-y-0.5 hover:border-cyan-300/20 hover:shadow-[0_30px_80px_rgba(2,6,23,0.35)]' : ''}
         ${className}
       `}
     >

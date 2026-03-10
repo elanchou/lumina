@@ -34,7 +34,7 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
         setDynamicCoins(marketService.availableCoins);
     };
     updateCoins();
-    const interval = setInterval(updateCoins, 2000);
+    const interval = setInterval(updateCoins, 15000);
 
     return () => {
         unsubscribe();
@@ -91,13 +91,14 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-                <h2 className="text-2xl font-bold text-white tracking-tight">Market Watch</h2>
-                <div className="flex items-center gap-2 mt-1 text-sm text-gray-400">
+                <div className="panel-badge panel-badge-cyan">Market Intelligence</div>
+                <h2 className="mt-3 text-3xl font-semibold text-white tracking-tight">Watchlist and live discovery</h2>
+                <div className="flex items-center gap-2 mt-2 text-sm text-slate-400">
                     <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
-                    Live CMC & Binance Feed
+                    Yahoo Finance quotes with CoinGecko discovery
                 </div>
             </div>
 
@@ -116,15 +117,15 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
                                 setSearchTerm(e.target.value);
                                 setShowDropdown(true);
                             }}
-                            placeholder="Search Crypto or Stocks..."
-                            className="w-full bg-glass-200 border border-glass-border rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-nexus-accent focus:ring-1 focus:ring-nexus-accent focus:outline-none transition-all"
+                            placeholder="Search stocks, funds, or crypto..."
+                            className="field-shell w-full pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500"
                         />
                     </form>
                 </div>
 
                 {/* Dropdown */}
                 {showDropdown && searchTerm && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#0b1120] border border-glass-border rounded-lg shadow-2xl overflow-hidden animate-fade-in max-h-64 overflow-y-auto backdrop-blur-xl">
+                    <div className="absolute top-full left-0 right-0 mt-2 overflow-hidden rounded-[22px] border border-white/10 bg-[#08101c]/95 shadow-2xl animate-fade-in max-h-64 overflow-y-auto backdrop-blur-xl">
                         {filteredSymbols.length > 0 ? (
                             filteredSymbols.map((item) => (
                                 <button
@@ -162,7 +163,7 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
                 return (
                 <GlassCard 
                     key={ticker.symbol} 
-                    className="group relative overflow-hidden transition-all hover:shadow-lg hover:shadow-blue-900/10 cursor-pointer hover:bg-glass-300"
+                    className="group relative overflow-hidden cursor-pointer transition-all"
                 >
                     <div onClick={() => setSelectedTicker(ticker)}>
                         <button 
@@ -175,7 +176,7 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
                         <div className="p-6">
                             <div className="flex justify-between items-start mb-6">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold border ${ticker.type === 'CRYPTO' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold border ${ticker.type === 'CRYPTO' ? 'bg-teal-400/10 border-teal-300/20 text-teal-300' : 'bg-sky-400/10 border-sky-300/20 text-sky-300'}`}>
                                         {ticker.type === 'CRYPTO' ? '₿' : ticker.symbol[0]}
                                     </div>
                                     <div>
@@ -203,7 +204,7 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
                                 />
                             </div>
                             
-                            <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-gray-500 uppercase tracking-wider font-mono">
+                            <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-500 uppercase tracking-wider font-mono">
                                 <span>Vol: {ticker.volume || 'N/A'}</span>
                                 <span>High: {ticker.high24h ? ticker.high24h.toLocaleString(undefined, {maximumFractionDigits:0}) : '--'}</span>
                             </div>
@@ -246,7 +247,7 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
                     </div>
 
                     {/* Big Chart */}
-                    <div className="h-64 w-full bg-black/20 rounded-xl border border-white/5 p-4">
+                    <div className="h-64 w-full rounded-[24px] border border-white/8 bg-black/25 p-4">
                          <Sparkline 
                             data={selectedTicker.dataPoints.map(d => d.value)} 
                             color={selectedTicker.change >= 0 ? '#10b981' : '#ef4444'} 
@@ -258,19 +259,19 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div className="rounded-[20px] border border-white/8 bg-white/[0.04] p-4">
                             <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">24h High</div>
                             <div className="text-white font-mono text-lg">${selectedTicker.high24h?.toLocaleString() || '--'}</div>
                         </div>
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div className="rounded-[20px] border border-white/8 bg-white/[0.04] p-4">
                             <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">24h Low</div>
                             <div className="text-white font-mono text-lg">${selectedTicker.low24h?.toLocaleString() || '--'}</div>
                         </div>
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div className="rounded-[20px] border border-white/8 bg-white/[0.04] p-4">
                             <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">Volume</div>
                             <div className="text-white font-mono text-lg">{selectedTicker.volume || '--'}</div>
                         </div>
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div className="rounded-[20px] border border-white/8 bg-white/[0.04] p-4">
                             <div className="text-gray-500 text-xs uppercase tracking-wider mb-1">Market Cap</div>
                             <div className="text-white font-mono text-lg">${selectedTicker.marketCap || '--'}</div>
                         </div>

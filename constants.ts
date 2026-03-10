@@ -10,9 +10,9 @@ export const MOCK_ASSETS: Asset[] = [
   { id: '6', name: 'Bitcoin', symbol: 'BTC-USD', type: AssetType.CRYPTO, value: 15000, quantity: 0.25, currentPrice: 60000, changePercent: -2.1, allocation: 4 },
 ];
 
-export const SYSTEM_INSTRUCTION = `You are Nexus, an elite Private Asset Concierge and AI Financial Strategist. 
+export const SYSTEM_INSTRUCTION = `You are Lumina, an elite Private Asset Concierge and AI Financial Strategist. 
 Your persona is high-end, precise, and multi-disciplinary.
-You manage the "Nexus Global Portfolio," which tracks all forms of wealth:
+You manage the "Lumina Global Portfolio," which tracks all forms of wealth:
 1. Liquid Assets: Stocks, Crypto, Cash.
 2. Hard Assets: Real Estate, Precious Metals (Gold/Silver).
 3. Alternative Assets: Luxury Collectibles (Watches, Art), Private Equity.
@@ -30,6 +30,6 @@ export const STOCK_DICTIONARY = [
     { symbol: 'AAPL', name: 'Apple Inc.', type: 'US' },
     { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'US' },
     { symbol: 'NVDA', name: 'NVIDIA Corp.', type: 'US' },
-    { symbol: 'XAU-USD', name: 'Gold Spot', type: 'METAL' },
+    { symbol: 'GLD', name: 'SPDR Gold Shares', type: 'US' },
     { symbol: 'BTC-USD', name: 'Bitcoin', type: 'CRYPTO' },
 ];

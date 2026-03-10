@@ -13,7 +13,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ assets = [], onAddWidget 
     {
       id: '1',
       role: 'model',
-      text: 'Lumina AI online. I can help monitor your portfolio or add custom widgets to your dashboard. Try saying "Add a widget for Tesla stock".',
+      text: 'Lumina AI online. I can monitor your portfolio, explain market moves, or create dashboard widgets. Try saying "Add a widget for Tesla stock".',
       timestamp: new Date()
     }
   ]);
@@ -143,8 +143,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ assets = [], onAddWidget 
             <div
               className={`max-w-[90%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-nexus-accent text-white rounded-tr-sm shadow-lg shadow-blue-900/20'
-                  : 'bg-white/5 border border-white/5 text-gray-200 rounded-tl-sm backdrop-blur-sm'
+                  ? 'rounded-tr-sm bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-400/10'
+                  : 'rounded-tl-sm border border-white/8 bg-white/[0.04] text-slate-200 backdrop-blur-sm'
               }`}
             >
               <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
@@ -176,13 +176,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ assets = [], onAddWidget 
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about your portfolio or markets..."
-            className="w-full bg-glass-100 border border-glass-border rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-nexus-accent/50 focus:ring-1 focus:ring-nexus-accent/50 transition-all resize-none h-12 overflow-hidden"
+            className="field-shell h-12 w-full resize-none overflow-hidden rounded-2xl pl-4 pr-12 py-3 text-sm text-white"
             style={{ minHeight: '48px' }}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
-            className="absolute right-2 top-1.5 p-1.5 bg-nexus-accent hover:bg-blue-400 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg text-white transition-colors"
+            className="absolute right-2 top-1.5 rounded-xl bg-cyan-400 p-1.5 text-slate-950 transition-colors hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-30"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7"></path>
@@ -190,9 +190,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ assets = [], onAddWidget 
           </button>
         </div>
         <div className="flex gap-2 mt-2 justify-center">
-            <button onClick={() => setInput("Add a widget for Apple Stock")} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition">Monitor AAPL</button>
-            <button onClick={() => setInput("Show me a volatility card")} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition">Risk Widget</button>
-            <button onClick={() => setInput("Create a chart for Bitcoin trend")} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition">BTC Chart</button>
+            <button onClick={() => setInput("Add a widget for Apple Stock")} className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] text-slate-400 transition hover:bg-white/[0.06] hover:text-white">Monitor AAPL</button>
+            <button onClick={() => setInput("Show me a volatility card")} className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] text-slate-400 transition hover:bg-white/[0.06] hover:text-white">Risk Widget</button>
+            <button onClick={() => setInput("Create a chart for Bitcoin trend")} className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] text-slate-400 transition hover:bg-white/[0.06] hover:text-white">BTC Chart</button>
         </div>
       </div>
     </div>

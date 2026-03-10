@@ -1,6 +1,6 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
-import yahooFinance from "yahoo-finance2";
+import { fetchCryptoList, fetchHistory, fetchQuotes } from "./lib/serverMarketData";
 
 async function startServer() {
   const app = express();
@@ -13,14 +13,18 @@ async function startServer() {
       return res.status(400).json({ error: "Symbol is required" });
     }
     try {
-      const symbols = symbol.split(',');
-      if (symbols.length === 1) {
-        const quote = await yahooFinance.quote(symbols[0]);
-        res.json(quote);
-      } else {
-        const quotes = await yahooFinance.quote(symbols);
-        res.json(quotes);
+      const quotes = await fetchQuotes(symbol);
+      const requestedSymbols = symbol.split(',').map(item => item.trim()).filter(Boolean);
+
+      if (requestedSymbols.length === 1) {
+        const quote = quotes[0];
+        if (!quote) {
+          return res.status(404).json({ error: "Quote not found", symbol: requestedSymbols[0] });
+        }
+        return res.json(quote);
       }
+
+      return res.json(quotes);
     } catch (error) {
       console.error("Error fetching quote:", error);
       res.status(500).json({ error: "Failed to fetch quote" });
@@ -33,14 +37,21 @@ async function startServer() {
       return res.status(400).json({ error: "Symbol is required" });
     }
     try {
-      const date = new Date();
-      date.setMonth(date.getMonth() - 1);
-      const queryOptions = { period1: date }; // 1 month history
-      const result = await yahooFinance.historical(symbol, queryOptions);
+      const result = await fetchHistory(symbol);
       res.json(result);
     } catch (error) {
       console.error("Error fetching history:", error);
       res.status(500).json({ error: "Failed to fetch history" });
+    }
+  });
+
+  app.get("/api/crypto-list", async (_req, res) => {
+    try {
+      const result = await fetchCryptoList();
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching crypto list:", error);
+      res.status(502).json({ error: "Failed to fetch crypto list", items: [] });
     }
   });
 

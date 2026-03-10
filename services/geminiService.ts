@@ -2,7 +2,14 @@
 import { GoogleGenAI, Type, GenerateContentResponse, FunctionDeclaration } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from '../constants';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAiClient = () => {
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+
+  return new GoogleGenAI({ apiKey });
+};
 
 const createWidgetTool: FunctionDeclaration = {
   name: 'createDashboardWidget',
@@ -45,6 +52,11 @@ export const generateFinancialResponse = async (
   portfolioContext?: string
 ): Promise<GenerateContentResponse | null> => {
   try {
+    const ai = getAiClient();
+    if (!ai) {
+      return null;
+    }
+
     const model = 'gemini-3-flash-preview'; 
 
     let instruction = SYSTEM_INSTRUCTION;
@@ -76,6 +88,11 @@ export const generateFinancialResponse = async (
 
 export const analyzePortfolioRisk = async (assets: string): Promise<string> => {
      try {
+        const ai = getAiClient();
+        if (!ai) {
+          return "{}";
+        }
+
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: `Conduct a deep risk analysis of this multi-asset portfolio including correlation risks between hard and liquid assets: ${assets}`,

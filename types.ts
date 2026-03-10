@@ -68,3 +68,51 @@ export interface DashboardWidget {
   size: 'small' | 'medium' | 'large';
   visualStyle?: 'default' | 'accent' | 'success' | 'warning' | 'danger';
 }
+
+export interface HistoricalQuotePoint {
+  date: string;
+  close: number;
+  timestamp: number;
+  shortLabel: string;
+}
+
+export interface DashboardStat {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone?: 'default' | 'accent' | 'positive' | 'negative' | 'warning';
+}
+
+export interface DashboardPulse {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone?: 'default' | 'accent' | 'positive' | 'negative' | 'warning';
+}
+
+export interface DashboardChartPoint {
+  date: string;
+  shortLabel: string;
+  value: number;
+}
+
+export interface DashboardSnapshot {
+  totalValue: number;
+  dailyChangeValue: number;
+  dailyChangePercent: number;
+  pricedCoveragePercent: number;
+  pricedCoverageValue: number;
+  chartCoveragePercent: number;
+  chartCoverageValue: number;
+  marketTrackedAssets: number;
+  totalAssets: number;
+  largestPositionShare: number;
+  largestPosition: Asset | null;
+  topMover: Asset | null;
+  weakestMover: Asset | null;
+  chart: DashboardChartPoint[];
+  stats: DashboardStat[];
+  pulse: DashboardPulse[];
+}
