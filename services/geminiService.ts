@@ -2,40 +2,40 @@
 import { GoogleGenAI, Type, GenerateContentResponse, FunctionDeclaration } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from '../constants';
 
-const apiKey = process.env.API_KEY;
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-// Define the Tool for Gemini
 const createWidgetTool: FunctionDeclaration = {
   name: 'createDashboardWidget',
-  description: 'Creates a new widget on the user dashboard to visualize financial data, track a stock price, or show a key metric.',
+  description: 'Creates a new dynamic widget on the dashboard to visualize any asset data, market trends, or AI financial insights.',
   parameters: {
-    type: Type.OBJECT,
-    properties: {
-      type: {
-        type: Type.STRING,
-        description: 'The type of widget: "metric" (single number), "chart" (line chart), or "insight" (text card).',
-        enum: ['metric', 'chart', 'insight']
+    type: {
+      type: Type.OBJECT,
+      properties: {
+        type: {
+          type: Type.STRING,
+          description: 'Type: "metric" (single value), "chart" (line trend), "insight" (analysis text).',
+          enum: ['metric', 'chart', 'insight']
+        },
+        title: {
+          type: Type.STRING,
+          description: 'Widget title (e.g., "Gold Valuation", "Portfolio Health").'
+        },
+        subTitle: {
+          type: Type.STRING,
+          description: 'Context text.'
+        },
+        dataValue: {
+          type: Type.STRING,
+          description: 'The primary data: formatted string for metrics, comma-separated numbers for charts, or full text for insights.'
+        },
+        visualStyle: {
+          type: Type.STRING,
+          description: 'Color theme.',
+          enum: ['default', 'accent', 'success', 'warning', 'danger']
+        }
       },
-      title: {
-        type: Type.STRING,
-        description: 'The title of the widget (e.g., "AAPL Price", "Portfolio Risk").'
-      },
-      subTitle: {
-        type: Type.STRING,
-        description: 'Subtitle or context (e.g., "Real-time value", "AI Assessment").'
-      },
-      dataValue: {
-        type: Type.STRING,
-        description: 'For metrics: the main value (e.g., "$150.00"). For charts: comma separated values.'
-      },
-      visualStyle: {
-        type: Type.STRING,
-        description: 'Color theme',
-        enum: ['default', 'accent', 'success', 'warning', 'danger']
-      }
-    },
-    required: ['type', 'title', 'dataValue']
+      required: ['type', 'title', 'dataValue']
+    }
   }
 };
 
@@ -44,31 +44,22 @@ export const generateFinancialResponse = async (
   lastMessage: string,
   portfolioContext?: string
 ): Promise<GenerateContentResponse | null> => {
-  if (!ai) {
-    console.error("API Key is missing.");
-    return null;
-  }
-
   try {
-    const model = 'gemini-2.5-flash'; 
+    const model = 'gemini-3-flash-preview'; 
 
     let instruction = SYSTEM_INSTRUCTION;
-    instruction += `\n\nYou have the ability to modify the user's dashboard by calling the 'createDashboardWidget' function. 
-    If the user asks to "monitor", "track", "show me a chart of", or "add a card for" something, use the tool.
-    
-    For 'metric' widgets, 'dataValue' should be the formatted number (e.g. "+5.2%").
-    For 'chart' widgets, 'dataValue' should be a comma-separated string of 10 numbers simulating trend history.
-    For 'insight' widgets, 'dataValue' is the body text.`;
-
     if (portfolioContext) {
-        instruction += `\n\nCURRENT USER PORTFOLIO CONTEXT:\n${portfolioContext}`;
+        instruction += `\n\nCURRENT GLOBAL ASSETS:\n${portfolioContext}`;
     }
 
-    const chat = ai.chats.create({
+    const response = await ai.models.generateContent({
         model: model,
+        contents: [
+            ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
+            { role: 'user', parts: [{ text: lastMessage }] }
+        ],
         config: {
             systemInstruction: instruction,
-            // Combine Google Search with our custom function
             tools: [
               { googleSearch: {} },
               { functionDeclarations: [createWidgetTool] }
@@ -76,12 +67,7 @@ export const generateFinancialResponse = async (
         }
     });
 
-    const response: GenerateContentResponse = await chat.sendMessage({
-        message: lastMessage
-    });
-
     return response;
-
   } catch (error) {
     console.error("Gemini API Error:", error);
     return null;
@@ -89,27 +75,25 @@ export const generateFinancialResponse = async (
 };
 
 export const analyzePortfolioRisk = async (assets: string): Promise<string> => {
-     if (!ai) return "API Key Missing";
-
      try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Analyze the following portfolio for risk, volatility, and diversification. JSON format: ${assets}`,
+            model: 'gemini-3-flash-preview',
+            contents: `Conduct a deep risk analysis of this multi-asset portfolio including correlation risks between hard and liquid assets: ${assets}`,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        riskScore: { type: Type.NUMBER, description: "0-100 score, 100 being highest risk" },
-                        volatility: { type: Type.STRING, description: "Low, Medium, or High" },
-                        maxDrawdown: { type: Type.STRING, description: "Estimated max drawdown percentage" },
-                        summary: { type: Type.STRING, description: "A brief analysis paragraph" },
+                        riskScore: { type: Type.NUMBER },
+                        volatility: { type: Type.STRING },
+                        maxDrawdown: { type: Type.STRING },
+                        summary: { type: Type.STRING },
                         recommendations: { 
                             type: Type.ARRAY, 
-                            items: { type: Type.STRING },
-                            description: "3 actionable bullet points"
+                            items: { type: Type.STRING }
                         }
-                    }
+                    },
+                    required: ['riskScore', 'volatility', 'summary']
                 }
             }
         });

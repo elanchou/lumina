@@ -117,7 +117,7 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
                                 setShowDropdown(true);
                             }}
                             placeholder="Search Crypto or Stocks..."
-                            className="w-full bg-glass-200 border border-glass-border rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-lumina-accent focus:ring-1 focus:ring-lumina-accent focus:outline-none transition-all"
+                            className="w-full bg-glass-200 border border-glass-border rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-nexus-accent focus:ring-1 focus:ring-nexus-accent focus:outline-none transition-all"
                         />
                     </form>
                 </div>
@@ -238,7 +238,7 @@ const Market: React.FC<MarketProps> = ({ onAddToPortfolio }) => {
                          </div>
                          <button 
                              onClick={handleBuyFromModal}
-                             className="bg-lumina-accent hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] flex items-center gap-2"
+                             className="bg-nexus-accent hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] flex items-center gap-2"
                          >
                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
                              Add to Portfolio

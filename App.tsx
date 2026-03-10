@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { ViewState, Asset, AssetType, DashboardWidget } from './types';
 import { MOCK_ASSETS } from './constants';
 import Dashboard from './components/Dashboard';
@@ -8,14 +9,7 @@ import ChatInterface from './components/ChatInterface';
 import Analysis from './components/Analysis';
 import Modal from './components/Modal';
 
-const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ViewState | 'chat'>('dashboard');
-  const [assets, setAssets] = useState<Asset[]>(MOCK_ASSETS);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [toast, setToast] = useState<{message: string, type: 'success' | 'info'} | null>(null);
-  
-  // Default Widgets
-  const [widgets, setWidgets] = useState<DashboardWidget[]>([
+const DEFAULT_WIDGETS: DashboardWidget[] = [
     {
       id: 'default-1',
       type: 'metric',
@@ -52,7 +46,28 @@ const App: React.FC = () => {
       size: 'small',
       visualStyle: 'accent'
     }
-  ]);
+];
+
+const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<ViewState | 'chat'>('dashboard');
+  const [assets, setAssets] = useState<Asset[]>(() => {
+    const saved = localStorage.getItem('nexus_assets');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return MOCK_ASSETS;
+  });
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'info'} | null>(null);
+  
+  // Default Widgets
+  const [widgets, setWidgets] = useState<DashboardWidget[]>(() => {
+    const saved = localStorage.getItem('nexus_widgets');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return DEFAULT_WIDGETS;
+  });
   
   const [settings, setSettings] = useState({
       notifications: true,
@@ -60,6 +75,66 @@ const App: React.FC = () => {
       theme: 'Dark',
       highContrast: false
   });
+
+  useEffect(() => {
+    localStorage.setItem('nexus_assets', JSON.stringify(assets));
+  }, [assets]);
+
+  useEffect(() => {
+    localStorage.setItem('nexus_widgets', JSON.stringify(widgets));
+  }, [widgets]);
+
+  // Fetch real prices for portfolio assets
+  useEffect(() => {
+      const fetchAssetPrices = async () => {
+          // Get unique symbols that have a quantity
+          const symbolsToFetch = Array.from(new Set(assets.filter(a => a.symbol && a.quantity).map(a => a.symbol)));
+          if (symbolsToFetch.length === 0) return;
+          
+          try {
+              const res = await fetch(`/api/quote?symbol=${symbolsToFetch.join(',')}`);
+              if (res.ok) {
+                  const data = await res.json();
+                  const quotes = Array.isArray(data) ? data : [data];
+                  
+                  setAssets(prev => {
+                      let changed = false;
+                      const updated = prev.map(a => {
+                          const quote = quotes.find(q => q.symbol === a.symbol);
+                          if (quote && quote.regularMarketPrice && a.quantity) {
+                              const newPrice = quote.regularMarketPrice;
+                              if (a.currentPrice !== newPrice) {
+                                  changed = true;
+                                  return {
+                                      ...a,
+                                      currentPrice: newPrice,
+                                      value: newPrice * a.quantity,
+                                      changePercent: quote.regularMarketChangePercent || a.changePercent
+                                  };
+                              }
+                          }
+                          return a;
+                      });
+                      
+                      if (changed) {
+                          const total = updated.reduce((s, a) => s + a.value, 0);
+                          return updated.map(a => ({
+                              ...a,
+                              allocation: parseFloat(((a.value / total) * 100).toFixed(1))
+                          }));
+                      }
+                      return prev;
+                  });
+              }
+          } catch (e) {
+              console.error("Failed to fetch asset prices", e);
+          }
+      };
+      
+      fetchAssetPrices();
+      const interval = setInterval(fetchAssetPrices, 15000);
+      return () => clearInterval(interval);
+  }, [assets.length]); // Re-run when number of assets changes
 
   // Toast Logic
   useEffect(() => {
@@ -84,12 +159,15 @@ const App: React.FC = () => {
 
   // Handler to buy from Market Tab
   const handleAddToPortfolio = (symbol: string, name: string, price: number, type: AssetType) => {
+      const quantity = type === AssetType.CRYPTO ? 0.5 : 10;
       const newAsset: Asset = {
           id: Date.now().toString(),
           name: name,
           symbol: symbol,
           type: type,
-          value: price * (type === AssetType.CRYPTO ? 0.5 : 10), // Simulating buying 0.5 BTC or 10 Shares default
+          quantity: quantity,
+          currentPrice: price,
+          value: price * quantity, // Simulating buying 0.5 BTC or 10 Shares default
           changePercent: 0,
           allocation: 0
       };
@@ -107,7 +185,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen h-[100dvh] w-full bg-lumina-bg text-slate-200 font-sans selection:bg-lumina-accent/30 bg-gradient-to-br from-lumina-bg via-[#050b1a] to-[#02040a] overflow-hidden flex flex-col">
+    <div className="min-h-screen h-[100dvh] w-full bg-nexus-bg text-slate-200 font-sans selection:bg-nexus-accent/30 bg-gradient-to-br from-nexus-bg via-[#050b1a] to-[#02040a] overflow-hidden flex flex-col">
       
       {/* Ambient Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -126,7 +204,7 @@ const App: React.FC = () => {
       )}
 
       {/* Top Navigation Bar */}
-      <header className="flex-none sticky top-0 z-50 w-full border-b border-glass-border bg-lumina-bg/80 backdrop-blur-xl">
+      <header className="flex-none sticky top-0 z-50 w-full border-b border-glass-border bg-nexus-bg/80 backdrop-blur-xl">
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           
           {/* Logo */}
@@ -145,7 +223,7 @@ const App: React.FC = () => {
              </div>
              <div>
                <h1 className="text-lg font-bold tracking-tight text-white leading-none">
-                 LUMINA
+                 NEXUS
                </h1>
                <div className="text-[9px] font-sans font-medium text-blue-400 tracking-[0.3em] uppercase opacity-80 group-hover:text-cyan-300 transition-colors">
                  Finance GPT
@@ -157,26 +235,26 @@ const App: React.FC = () => {
           <nav className="hidden md:flex items-center p-1 bg-white/5 rounded-xl border border-white/5">
             <button 
               onClick={() => setActiveTab('dashboard')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-lumina-accent text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-nexus-accent text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
               Dashboard
             </button>
             <button 
               onClick={() => setActiveTab('market')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'market' ? 'bg-lumina-accent text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'market' ? 'bg-nexus-accent text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
               Market
             </button>
             <button 
               onClick={() => setActiveTab('analysis')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'analysis' ? 'bg-lumina-accent text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'analysis' ? 'bg-nexus-accent text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
               Analysis
             </button>
             <div className="w-px h-4 bg-white/10 mx-1"></div>
              <button 
               onClick={() => setActiveTab('chat')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'chat' ? 'bg-lumina-accent text-white' : 'text-blue-400 hover:bg-blue-500/10'}`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'chat' ? 'bg-nexus-accent text-white' : 'text-blue-400 hover:bg-blue-500/10'}`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
               Ask AI
@@ -245,28 +323,28 @@ const App: React.FC = () => {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0b1120]/90 backdrop-blur-xl border-t border-white/5 px-6 py-3 flex justify-between items-center z-50 safe-area-pb">
           <button 
             onClick={() => setActiveTab('dashboard')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'dashboard' ? 'text-lumina-accent' : 'text-gray-500'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'dashboard' ? 'text-nexus-accent' : 'text-gray-500'}`}
           >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
               <span className="text-[10px] font-medium">Home</span>
           </button>
           <button 
             onClick={() => setActiveTab('market')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'market' ? 'text-lumina-accent' : 'text-gray-500'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'market' ? 'text-nexus-accent' : 'text-gray-500'}`}
           >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
               <span className="text-[10px] font-medium">Market</span>
           </button>
           <button 
             onClick={() => setActiveTab('analysis')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'analysis' ? 'text-lumina-accent' : 'text-gray-500'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'analysis' ? 'text-nexus-accent' : 'text-gray-500'}`}
           >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
               <span className="text-[10px] font-medium">Insights</span>
           </button>
            <button 
             onClick={() => setActiveTab('chat')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'chat' ? 'text-lumina-accent' : 'text-gray-500'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'chat' ? 'text-nexus-accent' : 'text-gray-500'}`}
           >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
               <span className="text-[10px] font-medium">AI Chat</span>
@@ -288,7 +366,7 @@ const App: React.FC = () => {
                 </div>
                 <button 
                     onClick={() => setSettings({...settings, notifications: !settings.notifications})}
-                    className={`w-10 h-6 rounded-full transition-colors relative ${settings.notifications ? 'bg-lumina-accent' : 'bg-gray-700'}`}
+                    className={`w-10 h-6 rounded-full transition-colors relative ${settings.notifications ? 'bg-nexus-accent' : 'bg-gray-700'}`}
                 >
                     <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${settings.notifications ? 'translate-x-4' : ''}`}></div>
                 </button>
@@ -321,11 +399,12 @@ const App: React.FC = () => {
                 </div>
             </div>
              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs text-blue-300">
-                 Lumina Finance GPT v1.2.0<br/>
+                 Nexus Finance GPT v1.2.0<br/>
                  Powered by Gemini 2.5 Flash
              </div>
         </div>
       </Modal>
+      <Analytics />
     </div>
   );
 };

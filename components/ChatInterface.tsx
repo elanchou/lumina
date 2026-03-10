@@ -143,7 +143,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ assets = [], onAddWidget 
             <div
               className={`max-w-[90%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-lumina-accent text-white rounded-tr-sm shadow-lg shadow-blue-900/20'
+                  ? 'bg-nexus-accent text-white rounded-tr-sm shadow-lg shadow-blue-900/20'
                   : 'bg-white/5 border border-white/5 text-gray-200 rounded-tl-sm backdrop-blur-sm'
               }`}
             >
@@ -159,9 +159,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ assets = [], onAddWidget 
         {isTyping && (
             <div className="flex items-start">
                 <div className="px-4 py-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-sm flex gap-1.5 items-center">
-                    <div className="w-1.5 h-1.5 bg-lumina-accent/60 rounded-full animate-bounce"></div>
-                    <div className="w-1.5 h-1.5 bg-lumina-accent/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-1.5 h-1.5 bg-lumina-accent/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-1.5 h-1.5 bg-nexus-accent/60 rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 bg-nexus-accent/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-1.5 h-1.5 bg-nexus-accent/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
             </div>
         )}
@@ -169,20 +169,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ assets = [], onAddWidget 
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-glass-border bg-lumina-bg/30 backdrop-blur-sm">
+      <div className="p-4 border-t border-glass-border bg-nexus-bg/30 backdrop-blur-sm">
         <div className="relative">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about your portfolio or markets..."
-            className="w-full bg-glass-100 border border-glass-border rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-lumina-accent/50 focus:ring-1 focus:ring-lumina-accent/50 transition-all resize-none h-12 overflow-hidden"
+            className="w-full bg-glass-100 border border-glass-border rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-nexus-accent/50 focus:ring-1 focus:ring-nexus-accent/50 transition-all resize-none h-12 overflow-hidden"
             style={{ minHeight: '48px' }}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
-            className="absolute right-2 top-1.5 p-1.5 bg-lumina-accent hover:bg-blue-400 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg text-white transition-colors"
+            className="absolute right-2 top-1.5 p-1.5 bg-nexus-accent hover:bg-blue-400 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg text-white transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7"></path>

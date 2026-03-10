@@ -3,7 +3,11 @@ export enum AssetType {
   CASH = 'Cash',
   STOCK = 'Stock',
   CRYPTO = 'Crypto',
-  FUND = 'Fund'
+  FUND = 'Fund',
+  REAL_ESTATE = 'Real Estate',
+  METAL = 'Precious Metals',
+  COLLECTIBLE = 'Collectible',
+  OTHER = 'Other'
 }
 
 export interface Asset {
@@ -11,9 +15,13 @@ export interface Asset {
   name: string;
   symbol: string;
   type: AssetType;
-  value: number;
+  value: number; // Total value in USD
+  quantity?: number; // Number of shares/coins
+  currentPrice?: number; // Current price per unit
   changePercent: number;
   allocation: number;
+  acquisitionDate?: string;
+  location?: string; // For Real Estate
 }
 
 export interface MarketTicker {
@@ -25,9 +33,9 @@ export interface MarketTicker {
   changePercent: number;
   type: 'US' | 'HK' | 'CN' | 'CRYPTO';
   volume?: string;
-  high24h?: number; // New
-  low24h?: number;  // New
-  marketCap?: string; // New
+  high24h?: number;
+  low24h?: number;
+  marketCap?: string;
   dataPoints: { time: string; value: number }[];
 }
 
@@ -48,8 +56,6 @@ export interface AnalysisReport {
   summary: string;
   recommendations: string[];
 }
-
-// --- New Types for Dynamic Dashboard ---
 
 export type WidgetType = 'metric' | 'chart' | 'insight';
 
