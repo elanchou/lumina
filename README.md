@@ -1,20 +1,45 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Lumina
 
-# Run and deploy your AI Studio app
+Personal finance platform (app name: Nexus Finance) with a liquid-glass UI, simulated market data, portfolio management and AI financial analysis powered by Gemini.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/de04ba9d-12cf-40a4-9ece-81adb3b04828
+- Dashboard, market and portfolio views
+- AI analysis and chat interface backed by Gemini
+- Express server (`server.ts`) serving the API and the Vite app
 
-## Run Locally
+## Tech stack
 
-**Prerequisites:**  Node.js
+React 19, Vite, Express 5, Recharts, TypeScript, `@google/genai`
 
+## Getting started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+**Prerequisites:** Node.js 20 or newer.
+
+```bash
+npm install
+cp .env.example .env.local   # set GEMINI_API_KEY
+npm run dev                  # http://localhost:3000
+```
+
+## Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `GEMINI_API_KEY` | Gemini API key used for AI features |
+
+## Project structure
+
+```text
+components/   Dashboard, Market, Analysis, ChatInterface, GlassCard, Sparkline, Modal
+services/     geminiService.ts
+tests/        dashboardData.test.ts
+docs/plans/  design notes
+server.ts
+```
+
+## Testing
+
+```bash
+npm test
+```
